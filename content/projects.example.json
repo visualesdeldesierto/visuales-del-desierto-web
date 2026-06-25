@@ -1,0 +1,44 @@
+[
+  {
+    "id": "the-light",
+    "title": "The Light",
+    "year": "",
+    "category": "Instalacion audiovisual",
+    "clientOrSpace": "",
+    "location": "Guadalajara, Jalisco",
+    "public": true,
+    "role": "Conceptualizacion, direccion visual, videomapping y ejecucion",
+    "technologies": [
+      "Videomapping",
+      "Audio sincronizado",
+      "Luz",
+      "Proyeccion"
+    ],
+    "shortDescription": "",
+    "media": {
+      "hero": "assets/media/projects/the-light/hero.jpg",
+      "stills": [],
+      "video": ""
+    },
+    "credits": []
+  },
+  {
+    "id": "proyecto-pendiente",
+    "title": "Nombre del proyecto",
+    "year": "",
+    "category": "",
+    "clientOrSpace": "",
+    "location": "",
+    "public": false,
+    "role": "",
+    "technologies": [],
+    "shortDescription": "",
+    "media": {
+      "hero": "",
+      "stills": [],
+      "video": ""
+    },
+    "credits": []
+  }
+]
+
