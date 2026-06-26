@@ -630,6 +630,16 @@ h3 {
   text-transform: uppercase;
 }
 
+.kinetic-letter {
+  display: inline-block;
+  will-change: transform;
+  transition: transform 520ms var(--ease), opacity 520ms var(--ease);
+}
+
+.kinetic-letter.is-space {
+  width: 0.34em;
+}
+
 .contact-panel {
   display: grid;
   gap: 1.25rem;
@@ -805,5 +815,9 @@ h3 {
   .reveal {
     opacity: 1;
     transform: none;
+  }
+
+  .kinetic-letter {
+    transform: none !important;
   }
 }

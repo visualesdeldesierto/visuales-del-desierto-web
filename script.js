@@ -6,6 +6,7 @@
   const hero = document.querySelector("[data-hero]");
   const canvas = document.getElementById("atmosphere");
   const ctx = canvas ? canvas.getContext("2d") : null;
+  const kineticText = document.querySelector("[data-kinetic-text] p");
 
   const updateHeader = () => {
     if (!header) return;
@@ -54,6 +55,53 @@
     revealItems.forEach((item) => observer.observe(item));
   } else {
     revealItems.forEach((item) => item.classList.add("is-visible"));
+  }
+
+  if (kineticText && !prefersReducedMotion) {
+    const text = kineticText.textContent.trim();
+    kineticText.textContent = "";
+
+    const letters = [...text].map((character) => {
+      const span = document.createElement("span");
+      span.className = character === " " ? "kinetic-letter is-space" : "kinetic-letter";
+      span.textContent = character === " " ? "\u00A0" : character;
+      kineticText.appendChild(span);
+      return span;
+    });
+
+    const resetLetters = () => {
+      letters.forEach((letter) => {
+        letter.style.transform = "translate3d(0, 0, 0)";
+        letter.style.opacity = "1";
+      });
+    };
+
+    kineticText.addEventListener("pointermove", (event) => {
+      letters.forEach((letter) => {
+        const rect = letter.getBoundingClientRect();
+        const letterX = rect.left + rect.width / 2;
+        const letterY = rect.top + rect.height / 2;
+        const dx = letterX - event.clientX;
+        const dy = letterY - event.clientY;
+        const distance = Math.hypot(dx, dy);
+        const influence = Math.max(0, 1 - distance / 150);
+
+        if (influence <= 0) {
+          letter.style.transform = "translate3d(0, 0, 0)";
+          letter.style.opacity = "1";
+          return;
+        }
+
+        const angle = Math.atan2(dy, dx);
+        const offset = influence * 22;
+        const driftX = Math.cos(angle) * offset;
+        const driftY = Math.sin(angle) * offset;
+        letter.style.transform = `translate3d(${driftX}px, ${driftY}px, 0)`;
+        letter.style.opacity = String(1 - influence * 0.16);
+      });
+    }, { passive: true });
+
+    kineticText.addEventListener("pointerleave", resetLetters);
   }
 
   if (!ctx || !hero || prefersReducedMotion) return;
