@@ -61,12 +61,25 @@
     const text = kineticText.textContent.trim();
     kineticText.textContent = "";
 
-    const letters = [...text].map((character) => {
-      const span = document.createElement("span");
-      span.className = character === " " ? "kinetic-letter is-space" : "kinetic-letter";
-      span.textContent = character === " " ? "\u00A0" : character;
-      kineticText.appendChild(span);
-      return span;
+    const words = text.split(" ");
+    const letters = [];
+
+    words.forEach((word, wordIndex) => {
+      const wordWrap = document.createElement("span");
+      wordWrap.className = "kinetic-word";
+
+      [...word].forEach((character) => {
+        const span = document.createElement("span");
+        span.className = "kinetic-letter";
+        span.textContent = character;
+        wordWrap.appendChild(span);
+        letters.push(span);
+      });
+
+      kineticText.appendChild(wordWrap);
+      if (wordIndex < words.length - 1) {
+        kineticText.appendChild(document.createTextNode(" "));
+      }
     });
 
     const resetLetters = () => {

@@ -630,14 +630,15 @@ h3 {
   text-transform: uppercase;
 }
 
+.kinetic-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .kinetic-letter {
   display: inline-block;
   will-change: transform;
   transition: transform 520ms var(--ease), opacity 520ms var(--ease);
-}
-
-.kinetic-letter.is-space {
-  width: 0.34em;
 }
 
 .contact-panel {
