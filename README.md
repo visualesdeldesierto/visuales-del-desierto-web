@@ -75,3 +75,8 @@ design/refinements
 seo/setup
 deploy/vercel
 ```
+## Sanity
+
+La galería consulta contenido publicado desde el proyecto `ud3wwp5r`, dataset `production`. La configuración pública del frontend está en `sanity.config.js` y el Studio editorial está en `studio/`.
+
+Si Sanity no responde o todavía no existen documentos públicos, el sitio conserva automáticamente las tres piezas visuales de respaldo.

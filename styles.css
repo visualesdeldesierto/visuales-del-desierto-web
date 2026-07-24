@@ -547,6 +547,12 @@ h3 {
   transition: transform 600ms var(--ease), opacity 600ms var(--ease);
 }
 
+.project-media-image {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 .project-piece:hover .project-media {
   transform: scale(1.025);
   opacity: 1;

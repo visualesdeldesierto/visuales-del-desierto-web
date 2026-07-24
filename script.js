@@ -7,6 +7,7 @@
   const canvas = document.getElementById("atmosphere");
   const ctx = canvas ? canvas.getContext("2d") : null;
   const kineticText = document.querySelector("[data-kinetic-text] p");
+  const projectGallery = document.querySelector("[data-project-gallery]");
 
   const updateHeader = () => {
     if (!header) return;
@@ -42,20 +43,80 @@
     });
   }
 
-  const revealItems = [...document.querySelectorAll(".reveal")];
+  let revealObserver = null;
+  const observeRevealItems = (scope = document) => {
+    const revealItems = [...scope.querySelectorAll(".reveal:not(.is-visible)")];
+    if (revealObserver) {
+      revealItems.forEach((item) => revealObserver.observe(item));
+    } else {
+      revealItems.forEach((item) => item.classList.add("is-visible"));
+    }
+  };
+
   if ("IntersectionObserver" in window && !prefersReducedMotion) {
-    const observer = new IntersectionObserver((entries) => {
+    revealObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         entry.target.classList.add("is-visible");
-        observer.unobserve(entry.target);
+        revealObserver.unobserve(entry.target);
       });
     }, { threshold: 0.16 });
-
-    revealItems.forEach((item) => observer.observe(item));
-  } else {
-    revealItems.forEach((item) => item.classList.add("is-visible"));
   }
+  observeRevealItems();
+
+  const loadSanityProjects = async () => {
+    const config = window.SANITY_CONFIG;
+    if (!projectGallery || !config?.projectId || !config?.dataset) return;
+
+    const query = `*[_type == "project" && isPublic == true] | order(featured desc, order asc, year desc) [0...6] {
+      _id,
+      title,
+      year,
+      category,
+      "imageUrl": heroImage.asset->url,
+      "imageAlt": coalesce(heroImage.alt, title)
+    }`;
+    const endpoint = `https://${config.projectId}.apicdn.sanity.io/v${config.apiVersion || "2025-02-19"}/data/query/${config.dataset}?query=${encodeURIComponent(query)}`;
+
+    try {
+      const response = await fetch(endpoint, { headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error(`Sanity responded with ${response.status}`);
+
+      const { result: projects = [] } = await response.json();
+      if (!projects.length) return;
+
+      projectGallery.replaceChildren(...projects.map((project, index) => {
+        const article = document.createElement("article");
+        article.className = `project-piece reveal${index === 0 ? " project-piece-large" : ""}`;
+
+        const media = document.createElement("div");
+        media.className = `project-media ${project.imageUrl ? "project-media-image" : ["media-violet", "media-blue", "media-lines"][index % 3]}`;
+        if (project.imageUrl) {
+          media.style.backgroundImage = `linear-gradient(180deg, transparent 42%, rgba(0, 0, 0, 0.78)), url("${project.imageUrl}?auto=format&fit=crop&w=1600&q=85")`;
+          media.setAttribute("role", "img");
+          media.setAttribute("aria-label", project.imageAlt || project.title);
+        } else {
+          media.setAttribute("aria-hidden", "true");
+        }
+
+        const caption = document.createElement("div");
+        caption.className = "project-caption";
+        const meta = document.createElement("p");
+        meta.textContent = [project.category, project.year].filter(Boolean).join(" / ");
+        const title = document.createElement("h3");
+        title.textContent = project.title;
+        caption.append(meta, title);
+        article.append(media, caption);
+        return article;
+      }));
+
+      observeRevealItems(projectGallery);
+    } catch (error) {
+      console.warn("No se pudieron cargar los proyectos de Sanity; se conserva el contenido de respaldo.", error);
+    }
+  };
+
+  loadSanityProjects();
 
   if (kineticText && !prefersReducedMotion) {
     const text = kineticText.textContent.trim();
