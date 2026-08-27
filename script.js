@@ -76,6 +76,7 @@
       title,
       year,
       category,
+      vimeoUrl,
       "imageUrl": heroImage.asset->url,
       "imageAlt": coalesce(heroImage.alt, title)
     }`;
