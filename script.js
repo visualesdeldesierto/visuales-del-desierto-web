@@ -92,10 +92,13 @@
       "imageUrl": heroImage.asset->url,
       "imageAlt": coalesce(heroImage.alt, title)
     }`;
-    const endpoint = `https://${config.projectId}.apicdn.sanity.io/v${config.apiVersion || "2025-02-19"}/data/query/${config.dataset}?query=${encodeURIComponent(query)}`;
+    const endpoint = `https://${config.projectId}.api.sanity.io/v${config.apiVersion || "2025-02-19"}/data/query/${config.dataset}?query=${encodeURIComponent(query)}`;
 
     try {
-      const response = await fetch(endpoint, { headers: { Accept: "application/json" } });
+      const response = await fetch(endpoint, {
+        cache: "no-store",
+        headers: { Accept: "application/json" }
+      });
       if (!response.ok) throw new Error(`Sanity responded with ${response.status}`);
 
       const { result: projects = [] } = await response.json();
