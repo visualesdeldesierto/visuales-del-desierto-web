@@ -8,6 +8,9 @@
   const ctx = canvas ? canvas.getContext("2d") : null;
   const kineticText = document.querySelector("[data-kinetic-text] p");
   const projectGallery = document.querySelector("[data-project-gallery]");
+  const videoDialog = document.querySelector("[data-video-dialog]");
+  const videoFrame = document.querySelector("[data-video-frame]");
+  const videoClose = document.querySelector("[data-video-close]");
 
   const updateHeader = () => {
     if (!header) return;
@@ -106,6 +109,19 @@
         const title = document.createElement("h3");
         title.textContent = project.title;
         caption.append(meta, title);
+        const vimeoId = project.vimeoUrl?.match(/vimeo\.com\/(?:manage\/videos\/)?(\d+)/)?.[1];
+        if (vimeoId) {
+          const playButton = document.createElement("button");
+          playButton.className = "project-video-button";
+          playButton.type = "button";
+          playButton.textContent = "Ver video";
+          playButton.addEventListener("click", () => {
+            if (!videoDialog || !videoFrame) return;
+            videoFrame.src = `https://player.vimeo.com/video/${vimeoId}?autoplay=1&title=0&byline=0&portrait=0`;
+            videoDialog.showModal();
+          });
+          caption.append(playButton);
+        }
         article.append(media, caption);
         return article;
       }));
@@ -117,6 +133,17 @@
   };
 
   loadSanityProjects();
+
+  const closeVideo = () => {
+    if (!videoDialog || !videoFrame) return;
+    videoDialog.close();
+    videoFrame.src = "";
+  };
+
+  videoClose?.addEventListener("click", closeVideo);
+  videoDialog?.addEventListener("click", (event) => {
+    if (event.target === videoDialog) closeVideo();
+  });
 
   if (kineticText && !prefersReducedMotion) {
     const text = kineticText.textContent.trim();

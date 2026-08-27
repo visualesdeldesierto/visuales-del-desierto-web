@@ -27,7 +27,18 @@ export const projectType = defineType({
     defineField({name: "order", title: "Orden", description: "Los números menores aparecen primero.", type: "number", initialValue: 100}),
     defineField({name: "role", title: "Rol de Visuales del Desierto", type: "text", rows: 3}),
     defineField({name: "shortDescription", title: "Descripción corta", type: "text", rows: 4, validation: (rule) => rule.max(320)}),
-    defineField({name: "technologies", title: "Tecnologías", type: "array", of: [{type: "string"}], options: {layout: "tags"}}),
+    defineField({
+      name: "vimeoUrl",
+      title: "URL de Vimeo",
+      description: "Enlace del video en Vimeo, por ejemplo: https://vimeo.com/1221668075",
+      type: "url",
+      validation: (rule) => rule.uri({scheme: ["https"]}).custom((url) => {
+        if (!url) return true;
+        return /^https:\/\/(?:www\.)?vimeo\.com\/(?:manage\/videos\/)?\d+(?:[/?#].*)?$/.test(url)
+          ? true
+          : "Introduce un enlace válido de Vimeo.";
+      })
+    }),    defineField({name: "technologies", title: "Tecnologías", type: "array", of: [{type: "string"}], options: {layout: "tags"}}),
     defineField({
       name: "heroImage",
       title: "Imagen principal",
