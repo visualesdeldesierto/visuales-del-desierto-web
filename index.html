@@ -230,7 +230,22 @@
       </div>
     </div>
   </dialog>
-  <script src="sanity.config.js"></script>
+
+  <dialog class="video-dialog project-context-dialog" data-context-dialog aria-labelledby="project-context-title">
+    <div class="video-dialog-inner project-context-inner">
+      <button class="video-dialog-close" type="button" data-context-close aria-label="Cerrar contexto">Cerrar</button>
+      <p class="project-context-meta" data-context-meta></p>
+      <h2 id="project-context-title" data-context-title></h2>
+      <div class="project-context-section" data-context-description-wrap>
+        <p class="project-context-label">Descripción</p>
+        <p data-context-description></p>
+      </div>
+      <div class="project-context-section" data-context-role-wrap>
+        <p class="project-context-label">Rol de Visuales del Desierto</p>
+        <p data-context-role></p>
+      </div>
+    </div>
+  </dialog>  <script src="sanity.config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

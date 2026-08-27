@@ -11,6 +11,14 @@
   const videoDialog = document.querySelector("[data-video-dialog]");
   const videoFrame = document.querySelector("[data-video-frame]");
   const videoClose = document.querySelector("[data-video-close]");
+  const contextDialog = document.querySelector("[data-context-dialog]");
+  const contextClose = document.querySelector("[data-context-close]");
+  const contextTitle = document.querySelector("[data-context-title]");
+  const contextMeta = document.querySelector("[data-context-meta]");
+  const contextDescription = document.querySelector("[data-context-description]");
+  const contextDescriptionWrap = document.querySelector("[data-context-description-wrap]");
+  const contextRole = document.querySelector("[data-context-role]");
+  const contextRoleWrap = document.querySelector("[data-context-role-wrap]");
 
   const updateHeader = () => {
     if (!header) return;
@@ -77,6 +85,10 @@
       year,
       category,
       vimeoUrl,
+      clientOrSpace,
+      location,
+      shortDescription,
+      role,
       "imageUrl": heroImage.asset->url,
       "imageAlt": coalesce(heroImage.alt, title)
     }`;
@@ -110,6 +122,28 @@
         const title = document.createElement("h3");
         title.textContent = project.title;
         caption.append(meta, title);
+        const actions = document.createElement("div");
+        actions.className = "project-actions";
+
+        const hasContext = project.shortDescription || project.role;
+        if (hasContext) {
+          const contextButton = document.createElement("button");
+          contextButton.className = "project-video-button";
+          contextButton.type = "button";
+          contextButton.textContent = "Ver contexto";
+          contextButton.addEventListener("click", () => {
+            if (!contextDialog || !contextTitle || !contextMeta || !contextDescription || !contextRole) return;
+            contextTitle.textContent = project.title;
+            contextMeta.textContent = [project.category, project.year, project.clientOrSpace, project.location].filter(Boolean).join(" / ");
+            contextDescription.textContent = project.shortDescription || "";
+            contextRole.textContent = project.role || "";
+            if (contextDescriptionWrap) contextDescriptionWrap.hidden = !project.shortDescription;
+            if (contextRoleWrap) contextRoleWrap.hidden = !project.role;
+            contextDialog.showModal();
+          });
+          actions.append(contextButton);
+        }
+
         const vimeoId = project.vimeoUrl?.match(/vimeo\.com\/(?:manage\/videos\/)?(\d+)/)?.[1];
         if (vimeoId) {
           const playButton = document.createElement("button");
@@ -121,8 +155,9 @@
             videoFrame.src = `https://player.vimeo.com/video/${vimeoId}?autoplay=1&title=0&byline=0&portrait=0`;
             videoDialog.showModal();
           });
-          caption.append(playButton);
+          actions.append(playButton);
         }
+        if (actions.childElementCount) caption.append(actions);
         article.append(media, caption);
         return article;
       }));
@@ -144,6 +179,12 @@
   videoClose?.addEventListener("click", closeVideo);
   videoDialog?.addEventListener("click", (event) => {
     if (event.target === videoDialog) closeVideo();
+  });
+
+  const closeContext = () => contextDialog?.close();
+  contextClose?.addEventListener("click", closeContext);
+  contextDialog?.addEventListener("click", (event) => {
+    if (event.target === contextDialog) closeContext();
   });
 
   if (kineticText && !prefersReducedMotion) {
