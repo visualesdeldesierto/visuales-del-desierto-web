@@ -888,6 +888,43 @@ h3 {
   gap: 0.75rem 1.25rem;
 }
 
+.project-video-dialog { max-height: 92dvh; overflow-y: auto; }
+.project-video-title { font-size: 1.2rem; line-height: 1.35; margin-bottom: 0.85rem; }
+.project-video-dialog .video-frame { max-height: 52dvh; }
+.project-video-caption { margin-top: 0.75rem; font-size: 0.9rem; }
+.video-navigation { margin-top: 0.75rem; }
+.video-navigation-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.video-navigation-row p { font-size: 0.85rem; white-space: nowrap; }
+.video-navigation button {
+  min-height: 44px;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--color-rule);
+  background: transparent;
+  color: var(--color-white);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.video-navigation button:hover,
+.video-pages button[aria-current="true"] { background: var(--color-white); color: #050505; }
+.video-navigation button:focus-visible,
+.video-external:focus-visible,
+.project-video-dialog .video-dialog-close:focus-visible { outline: 2px solid var(--color-white); outline-offset: 3px; }
+.video-pages { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; margin-top: 0.65rem; }
+.video-pages button { min-width: 44px; }
+.video-swipe {
+  margin-top: 0.65rem;
+  padding: 1rem 0.25rem;
+  border-block: 1px solid var(--color-rule);
+  text-align: center;
+  font-size: 0.75rem;
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+.video-external { display: inline-block; margin-top: 0.8rem; font-size: 0.8rem; text-decoration: underline; }
+.video-navigation[hidden], .video-swipe[hidden] { display: none; }
+
 .project-context-dialog {
   width: min(92vw, 42rem);
 }

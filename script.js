@@ -9,8 +9,7 @@
   const kineticText = document.querySelector("[data-kinetic-text] p");
   const projectGallery = document.querySelector("[data-project-gallery]");
   const videoDialog = document.querySelector("[data-video-dialog]");
-  const videoFrame = document.querySelector("[data-video-frame]");
-  const videoClose = document.querySelector("[data-video-close]");
+  const videoGallery = window.ProjectVideos?.createGallery(videoDialog);
   const contextDialog = document.querySelector("[data-context-dialog]");
   const contextClose = document.querySelector("[data-context-close]");
   const contextTitle = document.querySelector("[data-context-title]");
@@ -85,6 +84,7 @@
       year,
       category,
       vimeoUrl,
+      videos[]{title, url},
       clientOrSpace,
       location,
       shortDescription,
@@ -147,16 +147,15 @@
           actions.append(contextButton);
         }
 
-        const vimeoId = project.vimeoUrl?.match(/vimeo\.com\/(?:manage\/videos\/)?(\d+)/)?.[1];
-        if (vimeoId) {
+        const videos = window.ProjectVideos?.collectVideos(project) || [];
+        if (videos.length && videoGallery) {
           const playButton = document.createElement("button");
           playButton.className = "project-video-button";
           playButton.type = "button";
-          playButton.textContent = "Ver video";
+          playButton.textContent = videos.length === 1 ? "Ver video" : `Ver videos (${videos.length})`;
+          playButton.setAttribute("aria-haspopup", "dialog");
           playButton.addEventListener("click", () => {
-            if (!videoDialog || !videoFrame) return;
-            videoFrame.src = `https://player.vimeo.com/video/${vimeoId}?autoplay=1&title=0&byline=0&portrait=0`;
-            videoDialog.showModal();
+            videoGallery.open(project, playButton);
           });
           actions.append(playButton);
         }
@@ -172,17 +171,6 @@
   };
 
   loadSanityProjects();
-
-  const closeVideo = () => {
-    if (!videoDialog || !videoFrame) return;
-    videoDialog.close();
-    videoFrame.src = "";
-  };
-
-  videoClose?.addEventListener("click", closeVideo);
-  videoDialog?.addEventListener("click", (event) => {
-    if (event.target === videoDialog) closeVideo();
-  });
 
   const closeContext = () => contextDialog?.close();
   contextClose?.addEventListener("click", closeContext);

@@ -29,8 +29,8 @@ export const projectType = defineType({
     defineField({name: "shortDescription", title: "Descripción corta", type: "text", rows: 4, validation: (rule) => rule.max(320)}),
     defineField({
       name: "vimeoUrl",
-      title: "URL de Vimeo",
-      description: "Enlace del video en Vimeo, por ejemplo: https://vimeo.com/1221668075",
+      title: "Video principal de Vimeo",
+      description: "Se muestra primero. Puedes conservar este enlace y agregar más videos en la lista de abajo.",
       type: "url",
       validation: (rule) => rule.uri({scheme: ["https"]}).custom((url) => {
         if (!url) return true;
@@ -38,7 +38,38 @@ export const projectType = defineType({
           ? true
           : "Introduce un enlace válido de Vimeo.";
       })
-    }),    defineField({name: "technologies", title: "Tecnologías", type: "array", of: [{type: "string"}], options: {layout: "tags"}}),
+    }),
+    defineField({
+      name: "videos",
+      title: "Videos adicionales de Vimeo",
+      description: "Agrega un elemento por video. Puedes arrastrarlos para cambiar su orden. El video principal se muestra primero; los enlaces repetidos solo aparecen una vez.",
+      type: "array",
+      of: [{
+        type: "object",
+        name: "projectVideo",
+        title: "Video",
+        fields: [
+          defineField({name: "title", title: "Título del video (opcional)", type: "string"}),
+          defineField({
+            name: "url",
+            title: "Enlace de Vimeo",
+            description: "Pega el enlace completo. Si el video es no listado, conserva también su código privado en la URL.",
+            type: "url",
+            validation: (rule) => rule.required().uri({scheme: ["https"]}).custom((url) => {
+              if (!url) return true;
+              return /^https:\/\/(?:www\.)?vimeo\.com\/(?:manage\/videos\/)?\d+(?:[/?#].*)?$/.test(url)
+                ? true
+                : "Introduce un enlace válido de Vimeo.";
+            })
+          })
+        ],
+        preview: {
+          select: {title: "title", subtitle: "url"},
+          prepare({title, subtitle}) { return {title: title || "Video de Vimeo", subtitle}; }
+        }
+      }]
+    }),
+    defineField({name: "technologies", title: "Tecnologías", type: "array", of: [{type: "string"}], options: {layout: "tags"}}),
     defineField({
       name: "heroImage",
       title: "Imagen principal",
