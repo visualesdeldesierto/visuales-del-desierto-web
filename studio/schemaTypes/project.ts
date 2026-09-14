@@ -40,6 +40,17 @@ export const projectType = defineType({
       })
     }),
     defineField({
+      name: "vimeoOrientation",
+      title: "Orientación del video principal",
+      description: "Elige la forma original del video para que se vea grande y sin recortes.",
+      type: "string",
+      initialValue: "vertical",
+      options: {layout: "radio", list: [
+        {title: "Horizontal (16:9)", value: "horizontal"},
+        {title: "Vertical (9:16)", value: "vertical"}
+      ]}
+    }),
+    defineField({
       name: "videos",
       title: "Videos adicionales de Vimeo",
       description: "Agrega un elemento por video. Puedes arrastrarlos para cambiar su orden. El video principal se muestra primero; los enlaces repetidos solo aparecen una vez.",
@@ -61,6 +72,17 @@ export const projectType = defineType({
                 ? true
                 : "Introduce un enlace válido de Vimeo.";
             })
+          }),
+          defineField({
+            name: "orientation",
+            title: "Orientación",
+            description: "Selecciona la forma original de este video.",
+            type: "string",
+            initialValue: "vertical",
+            options: {layout: "radio", list: [
+              {title: "Horizontal (16:9)", value: "horizontal"},
+              {title: "Vertical (9:16)", value: "vertical"}
+            ]}
           })
         ],
         preview: {

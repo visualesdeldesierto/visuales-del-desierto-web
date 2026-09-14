@@ -871,16 +871,39 @@ h3 {
 }
 
 .video-frame {
-  aspect-ratio: 9 / 16;
-  max-width: 28rem;
-  max-height: 78vh;
+  position: relative;
+  width: 100%;
+  max-height: 78dvh;
   margin-inline: auto;
+  overflow: hidden;
+  background: #000;
 }
 
+.video-frame[data-orientation="vertical"] { aspect-ratio: 9 / 16; max-width: 28rem; }
+.video-frame[data-orientation="horizontal"] { aspect-ratio: 16 / 9; max-width: 72rem; }
+
 .video-frame iframe {
+  display: block;
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+.video-fullscreen {
+  position: absolute;
+  z-index: 2;
+  top: 0.65rem;
+  right: 0.65rem;
+  min-height: 42px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  background: rgba(5, 5, 5, 0.82);
+  color: #fff;
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
 }
 .project-actions {
   display: flex;
@@ -888,9 +911,9 @@ h3 {
   gap: 0.75rem 1.25rem;
 }
 
-.project-video-dialog { max-height: 92dvh; overflow-y: auto; }
+.project-video-dialog { width: min(96vw, 80rem); max-height: 96dvh; overflow-y: auto; }
 .project-video-title { font-size: 1.2rem; line-height: 1.35; margin-bottom: 0.85rem; }
-.project-video-dialog .video-frame { max-height: 52dvh; }
+.project-video-dialog .video-frame { max-height: 68dvh; }
 .project-video-caption { margin-top: 0.75rem; font-size: 0.9rem; }
 .video-navigation { margin-top: 0.75rem; }
 .video-navigation-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
@@ -909,6 +932,7 @@ h3 {
 .video-pages button[aria-current="true"] { background: var(--color-white); color: #050505; }
 .video-navigation button:focus-visible,
 .video-external:focus-visible,
+.video-fullscreen:focus-visible,
 .project-video-dialog .video-dialog-close:focus-visible { outline: 2px solid var(--color-white); outline-offset: 3px; }
 .video-pages { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; margin-top: 0.65rem; }
 .video-pages button { min-width: 44px; }
@@ -924,6 +948,58 @@ h3 {
 }
 .video-external { display: inline-block; margin-top: 0.8rem; font-size: 0.8rem; text-decoration: underline; }
 .video-navigation[hidden], .video-swipe[hidden] { display: none; }
+
+.video-frame:fullscreen,
+.video-frame:-webkit-full-screen,
+.project-video-dialog.is-expanded .video-frame {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  aspect-ratio: auto;
+  margin: 0;
+  background: #000;
+}
+
+.video-frame:fullscreen iframe,
+.video-frame:-webkit-full-screen iframe,
+.project-video-dialog.is-expanded .video-frame iframe {
+  width: 100%;
+  height: 100%;
+}
+
+.project-video-dialog.is-expanded {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  overflow: hidden;
+}
+
+.project-video-dialog.is-expanded .video-dialog-inner { padding: 0; }
+.project-video-dialog.is-expanded .video-dialog-close,
+.project-video-dialog.is-expanded .project-video-title,
+.project-video-dialog.is-expanded .project-video-caption,
+.project-video-dialog.is-expanded .video-navigation,
+.project-video-dialog.is-expanded .video-swipe,
+.project-video-dialog.is-expanded .video-external { display: none; }
+
+@media (max-width: 640px) {
+  .project-video-dialog {
+    width: 100vw;
+    max-width: none;
+    max-height: 100dvh;
+    border-inline: 0;
+  }
+
+  .project-video-dialog .video-dialog-inner { padding: 0.75rem; }
+  .project-video-dialog .video-frame { max-height: 72dvh; }
+  .video-fullscreen { top: 0.5rem; right: 0.5rem; }
+}
 
 .project-context-dialog {
   width: min(92vw, 42rem);

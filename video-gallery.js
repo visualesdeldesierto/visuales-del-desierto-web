@@ -26,7 +26,7 @@
 
   function collectVideos(project) {
     const entries = [
-      { url: project.vimeoUrl },
+      { url: project.vimeoUrl, orientation: project.vimeoOrientation },
       ...(Array.isArray(project.videos) ? project.videos : [])
     ];
     const videos = [];
@@ -35,11 +35,13 @@
       const video = parseVimeoUrl(typeof entry === "string" ? entry : entry.url);
       if (!video) continue;
       const title = typeof entry.title === "string" ? entry.title.trim() : "";
+      const orientation = entry.orientation === "horizontal" ? "horizontal" : "vertical";
       const existing = videos.find((item) => item.id === video.id);
       if (existing) {
         if (video.hash && !existing.hash) Object.assign(existing, video);
         if (title && !existing.title) existing.title = title;
-      } else videos.push({ ...video, title });
+        if (entry.orientation === "horizontal" || entry.orientation === "vertical") existing.orientation = orientation;
+      } else videos.push({ ...video, title, orientation });
     }
     return videos;
   }
@@ -47,6 +49,8 @@
   function createGallery(dialog) {
     if (!dialog) return null;
     const frame = dialog.querySelector("[data-video-frame]");
+    const stage = dialog.querySelector("[data-video-stage]");
+    const fullscreen = dialog.querySelector("[data-video-fullscreen]");
     const title = dialog.querySelector("[data-video-title]");
     const caption = dialog.querySelector("[data-video-caption]");
     const nav = dialog.querySelector("[data-video-nav]");
@@ -55,8 +59,36 @@
     const swipe = dialog.querySelector("[data-video-swipe]");
     const external = dialog.querySelector("[data-video-external]");
     const close = dialog.querySelector("[data-video-close]");
-    if (!frame || !title || !caption || !nav || !counter || !pages || !swipe || !external || !close) return null;
+    if (!frame || !stage || !fullscreen || !title || !caption || !nav || !counter || !pages || !swipe || !external || !close) return null;
     let videos = [], index = 0, projectTitle = "", opener = null, gesture = null;
+
+    const doc = dialog.ownerDocument;
+    const fullscreenElement = () => doc.fullscreenElement || doc.webkitFullscreenElement;
+    const isExpanded = () => fullscreenElement() === stage || dialog.classList.contains("is-expanded");
+
+    function updateFullscreenButton() {
+      const expanded = isExpanded();
+      fullscreen.textContent = expanded ? "Salir de pantalla completa" : "Pantalla completa";
+      fullscreen.setAttribute("aria-expanded", String(expanded));
+    }
+
+    async function toggleFullscreen() {
+      try {
+        if (fullscreenElement() === stage) {
+          const exit = doc.exitFullscreen || doc.webkitExitFullscreen;
+          if (exit) await exit.call(doc);
+        } else if (stage.requestFullscreen || stage.webkitRequestFullscreen) {
+          const enter = stage.requestFullscreen || stage.webkitRequestFullscreen;
+          await enter.call(stage);
+        } else {
+          dialog.classList.toggle("is-expanded");
+          updateFullscreenButton();
+        }
+      } catch {
+        dialog.classList.toggle("is-expanded");
+        updateFullscreenButton();
+      }
+    }
 
     function show(nextIndex) {
       if (!videos.length) return;
@@ -65,6 +97,7 @@
       const label = video.title || `Video ${index + 1}`;
       frame.title = `${projectTitle} — ${label}`;
       frame.src = video.src; // Replacing the source stops the previous video.
+      stage.dataset.orientation = video.orientation;
       caption.textContent = label;
       counter.textContent = `${index + 1} de ${videos.length}`;
       external.href = video.url;
@@ -76,11 +109,16 @@
     }
 
     close.addEventListener("click", () => dialog.close());
+    fullscreen.addEventListener("click", toggleFullscreen);
+    doc.addEventListener?.("fullscreenchange", updateFullscreenButton);
+    doc.addEventListener?.("webkitfullscreenchange", updateFullscreenButton);
     dialog.addEventListener("click", (event) => {
       if (event.target === dialog) dialog.close();
     });
     dialog.addEventListener("close", () => {
       frame.removeAttribute("src");
+      dialog.classList.remove("is-expanded");
+      updateFullscreenButton();
       videos = [];
       gesture = null;
       opener?.focus();

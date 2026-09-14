@@ -20,7 +20,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20260830">
+  <link rel="stylesheet" href="styles.css?v=20260913">
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -226,8 +226,9 @@
     <div class="video-dialog-inner">
       <button class="video-dialog-close" type="button" data-video-close aria-label="Cerrar video">Cerrar</button>
       <h2 id="project-video-title" class="project-video-title" data-video-title></h2>
-      <div class="video-frame">
+      <div class="video-frame" data-video-stage data-orientation="vertical">
         <iframe data-video-frame title="Video del proyecto" allow="autoplay; fullscreen; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        <button class="video-fullscreen" type="button" data-video-fullscreen aria-expanded="false">Pantalla completa</button>
       </div>
       <p class="project-video-caption" data-video-caption></p>
       <div class="video-navigation" data-video-nav hidden>
@@ -258,7 +259,7 @@
       </div>
     </div>
   </dialog>  <script src="sanity.config.js"></script>
-  <script src="video-gallery.js?v=20260830"></script>
-  <script src="script.js?v=20260830"></script>
+  <script src="video-gallery.js?v=20260913"></script>
+  <script src="script.js?v=20260913"></script>
 </body>
 </html>
