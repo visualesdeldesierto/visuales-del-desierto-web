@@ -37,7 +37,7 @@ test('la experiencia conserva carga diferida y manejo del marcador', () => {
   const html = read('portales/index.html');
   const app = read('portales/app.js');
   assert.match(html, /preload="none"/);
-  assert.match(html, /data-src="\.\/assets\/video\/portal-01-web\.mp4"/);
+  assert.match(html, /data-src="\/portales\/assets\/video\/portal-01-web\.mp4"/);
   assert.match(app, /targetFound/);
   assert.match(app, /targetLost/);
   assert.match(app, /\.pause\(\)/);
@@ -51,4 +51,16 @@ test('la cámara se solicita directamente desde el gesto de entrada', () => {
   assert.doesNotMatch(app, /await resourceExists/);
   assert.match(styles, /\.panel[^}]*overflow-y:auto/);
   assert.match(styles, /@media \(max-height:650px\)/);
+});
+
+test('los recursos cargan aunque Vercel sirva la ruta sin barra final', () => {
+  const html = read('portales/index.html');
+  for (const resource of [
+    '/portales/styles.css',
+    '/portales/app.js',
+    '/portales/assets/targets/portal-01.mind',
+    '/portales/assets/video/portal-01-web.mp4'
+  ]) assert.ok(html.includes(resource), resource);
+  assert.doesNotMatch(html, /(?:href|src|data-src)="\.\//);
+  assert.doesNotMatch(html, /imageTargetSrc: \.\//);
 });
