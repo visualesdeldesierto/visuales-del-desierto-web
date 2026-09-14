@@ -17,19 +17,24 @@
     els.statusText.textContent = message;
   }
 
-  async function resourceExists(url) {
-    try {
-      const response = await fetch(url, { method: "HEAD", cache: "no-store" });
-      return response.ok;
-    } catch { return false; }
-  }
-
   function cameraErrorMessage(error) {
     const name = error?.name || "";
     if (name === "NotAllowedError" || name === "PermissionDeniedError") return "La cámara está bloqueada. Actívala en los permisos del navegador e inténtalo de nuevo.";
     if (name === "NotFoundError" || name === "DevicesNotFoundError") return "No encontramos una cámara disponible en este dispositivo.";
+    if (!navigator.mediaDevices?.getUserMedia) return "Abre este enlace en Safari o Chrome para permitir el uso de la cámara.";
     if (!window.isSecureContext && location.hostname !== "localhost") return "La cámara necesita una conexión HTTPS segura.";
     return "No pudimos iniciar la cámara. Revisa los permisos y vuelve a intentarlo.";
+  }
+
+  async function requestCameraPermission() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new DOMException("Camera API unavailable", "NotSupportedError");
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } },
+      audio: false
+    });
+    stream.getTracks().forEach(track => track.stop());
   }
 
   function prepareVideo() {
@@ -64,13 +69,6 @@
   async function startExperience() {
     els.start.disabled = true;
     els.retry.hidden = true;
-    setStatus("Preparando experiencia…");
-    if (!(await resourceExists("./assets/targets/portal-01.mind"))) {
-      setStatus("Falta compilar la imagen del Portal 01 (.mind).", "error");
-      els.start.disabled = false;
-      els.retry.hidden = false;
-      return;
-    }
     if (!window.isSecureContext && location.hostname !== "localhost") {
       setStatus("La cámara necesita una conexión HTTPS segura.", "error");
       els.start.disabled = false;
@@ -79,6 +77,7 @@
     }
     setStatus("Solicitando cámara…");
     try {
+      await requestCameraPermission();
       await els.scene.systems["mindar-image-system"].start();
       started = true;
       els.intro.hidden = true;

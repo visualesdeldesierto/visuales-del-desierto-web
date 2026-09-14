@@ -42,3 +42,13 @@ test('la experiencia conserva carga diferida y manejo del marcador', () => {
   assert.match(app, /targetLost/);
   assert.match(app, /\.pause\(\)/);
 });
+
+test('la cámara se solicita directamente desde el gesto de entrada', () => {
+  const app = read('portales/app.js');
+  const styles = read('portales/styles.css');
+  assert.match(app, /navigator\.mediaDevices\?\.getUserMedia/);
+  assert.match(app, /await requestCameraPermission\(\);\s*await els\.scene\.systems\["mindar-image-system"\]\.start\(\)/);
+  assert.doesNotMatch(app, /await resourceExists/);
+  assert.match(styles, /\.panel[^}]*overflow-y:auto/);
+  assert.match(styles, /@media \(max-height:650px\)/);
+});

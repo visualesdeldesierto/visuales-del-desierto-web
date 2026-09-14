@@ -5,7 +5,7 @@ body { background:#090b0e; color:var(--ink); font-family:Georgia,"Times New Roma
 #experience { position:relative; isolation:isolate; }
 #ar-scene { position:absolute; inset:0; width:100%; height:100%; z-index:0; }
 .panel, .status-card, .artwork-card, .secondary-button { position:absolute; z-index:3; }
-.panel { inset:0; display:grid; place-content:center; justify-items:center; gap:1rem; padding:max(2rem,env(safe-area-inset-top)) 1.5rem max(2rem,env(safe-area-inset-bottom)); text-align:center; background:radial-gradient(circle at 25% 15%,rgba(46,116,112,.23),transparent 35%),radial-gradient(circle at 80% 80%,rgba(156,73,47,.22),transparent 42%),#090b0e; }
+.panel { inset:0; display:grid; place-content:center; justify-items:center; gap:1rem; padding:max(2rem,env(safe-area-inset-top)) 1.5rem max(2rem,env(safe-area-inset-bottom)); overflow-y:auto; text-align:center; background:radial-gradient(circle at 25% 15%,rgba(46,116,112,.23),transparent 35%),radial-gradient(circle at 80% 80%,rgba(156,73,47,.22),transparent 42%),#090b0e; }
 .panel::before { content:""; width:min(74vw,19rem); aspect-ratio:16/9; border:1px solid rgba(242,234,219,.42); box-shadow:0 0 4rem rgba(99,184,174,.13),inset 0 0 2rem rgba(202,125,78,.08); }
 .eyebrow { margin:0; color:var(--muted); font:600 .69rem/1.2 system-ui,sans-serif; letter-spacing:.19em; text-transform:uppercase; }
 h1 { margin:0; font-size:clamp(2.7rem,14vw,5.4rem); font-weight:400; letter-spacing:-.035em; }
@@ -23,3 +23,9 @@ button { min-height:3rem; border-radius:999px; padding:.75rem 1.35rem; color:var
 .secondary-button { left:50%; bottom:max(1.5rem,env(safe-area-inset-bottom)); transform:translateX(-50%); border:1px solid rgba(255,255,255,.35); background:var(--glass); }
 [hidden] { display:none !important; }
 @media (prefers-reduced-motion:reduce) { *,*::before { animation:none !important; transition:none !important; } }
+
+@media (max-height:650px) {
+  .panel { place-content:start center; gap:.65rem; padding-top:max(1rem,env(safe-area-inset-top)); padding-bottom:max(1rem,env(safe-area-inset-bottom)); }
+  .panel::before { width:min(58vw,14rem); }
+  h1 { font-size:clamp(2.2rem,11vw,4rem); }
+}
