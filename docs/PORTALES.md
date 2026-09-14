@@ -24,3 +24,13 @@ El video es H.264 High, 960 × 540, 30 fps, yuv420p, sin audio, 20 s, 3.75 MB y 
 ## Estado
 
 Integración local en la rama `feature/portales-prototipo`. No publicar antes de revisar una vista previa HTTPS y probar cámara/seguimiento en iPhone y Android.
+
+## Vista previa Vercel
+
+- Rama remota: `feature/portales-prototipo`
+- Despliegue: exitoso
+- URL: `https://visuales-del-desierto-web-git-feat-66c2e8-visuales-del-desierto.vercel.app/portales`
+- Estado actual: protegida por inicio de sesión de Vercel; todavía no es adecuada para un QR público.
+- Producción: `https://visualesdeldesierto.com/portales` continúa respondiendo 404.
+
+Antes de probar con teléfonos hay que crear un enlace compartible de Vercel o autorizar un cambio limitado en la protección de esta vista previa. No fusionar a `main` para resolver este bloqueo.
