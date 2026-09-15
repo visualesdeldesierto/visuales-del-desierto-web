@@ -10,9 +10,13 @@ test('Portales existe como ruta independiente y completa', () => {
     'portales/index.html', 'portales/styles.css', 'portales/app.js',
     'portales/assets/targets/portal-01-target.png',
     'portales/assets/targets/portal-01.mind',
+    'portales/assets/targets/portal-01-cactus-target.png',
+    'portales/assets/targets/portal-01-cactus.mind',
     'portales/assets/video/portal-01-web.mp4'
   ]) assert.ok(fs.existsSync(path.join(root, relative)), relative);
-  assert.ok(fs.statSync(path.join(root, 'portales/assets/targets/portal-01.mind')).size > 100000);
+  for (const mind of ['portal-01.mind', 'portal-01-cactus.mind']) {
+    assert.ok(fs.statSync(path.join(root, 'portales/assets/targets', mind)).size > 100000, mind);
+  }
   const videoSize = fs.statSync(path.join(root, 'portales/assets/video/portal-01-web.mp4')).size;
   assert.ok(videoSize >= 3000000 && videoSize <= 5000000);
 });
@@ -58,7 +62,7 @@ test('los recursos cargan aunque Vercel sirva la ruta sin barra final', () => {
   for (const resource of [
     '/portales/styles.css',
     '/portales/app.js',
-    '/portales/assets/targets/portal-01.mind',
+    '/portales/assets/targets/portal-01-cactus.mind',
     '/portales/assets/video/portal-01-web.mp4'
   ]) assert.ok(html.includes(resource), resource);
   assert.doesNotMatch(html, /(?:href|src|data-src)="\.\//);
