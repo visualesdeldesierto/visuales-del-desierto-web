@@ -10,6 +10,7 @@
   };
   let started = false;
   let mediaPrepared = false;
+  let trackingWatchdog = null;
 
   function setStatus(message, state = "info") {
     els.status.hidden = false;
@@ -66,6 +67,14 @@
     if (started) setStatus("Buscando portal…");
   }
 
+  function startTrackingWatchdog() {
+    if (trackingWatchdog !== null) window.clearInterval(trackingWatchdog);
+    trackingWatchdog = window.setInterval(() => {
+      const targetVisible = els.target.object3D?.visible === true;
+      if (started && !targetVisible && !els.video.paused) pauseVideo();
+    }, 200);
+  }
+
   async function startExperience() {
     els.start.disabled = true;
     els.retry.hidden = true;
@@ -80,6 +89,7 @@
       await requestCameraPermission();
       await els.scene.systems["mindar-image-system"].start();
       started = true;
+      startTrackingWatchdog();
       els.intro.hidden = true;
       setStatus("Buscando portal…");
     } catch (error) {
@@ -94,6 +104,9 @@
   els.play.addEventListener("click", playVideo);
   els.target.addEventListener("targetFound", playVideo);
   els.target.addEventListener("targetLost", pauseVideo);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) pauseVideo();
+  });
   els.video.addEventListener("waiting", () => setStatus("Portal encontrado · cargando obra…"));
   els.video.addEventListener("playing", () => setStatus("Portal encontrado"));
   els.video.addEventListener("error", () => setStatus("El video del Portal 01 aún no está disponible.", "error"));

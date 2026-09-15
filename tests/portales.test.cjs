@@ -64,3 +64,11 @@ test('los recursos cargan aunque Vercel sirva la ruta sin barra final', () => {
   assert.doesNotMatch(html, /(?:href|src|data-src)="\.\//);
   assert.doesNotMatch(html, /imageTargetSrc: \.\//);
 });
+
+test('el video se pausa aunque el evento targetLost no llegue en iPhone', () => {
+  const app = read('portales/app.js');
+  assert.match(app, /els\.target\.object3D\?\.visible === true/);
+  assert.match(app, /!targetVisible && !els\.video\.paused/);
+  assert.match(app, /window\.setInterval\([\s\S]*?, 200\)/);
+  assert.match(app, /visibilitychange/);
+});
