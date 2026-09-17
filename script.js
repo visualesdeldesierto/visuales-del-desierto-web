@@ -245,8 +245,11 @@
   let height = 0;
   let dpr = 1;
   let particles = [];
+  let synapses = [];
+  let thoughtTrail = [];
   let lastFrame = 0;
-  const pointer = { x: 0, y: 0, tx: 0, ty: 0, active: false };
+  let lastPointerSample = 0;
+  const pointer = { x: 0, y: 0, tx: 0, ty: 0, px: 0, py: 0, active: false };
 
   const createParticle = (index, centerX, centerY) => {
     const angle = Math.random() * Math.PI * 2;
@@ -255,6 +258,7 @@
     const y = centerY + Math.sin(angle) * radius + (Math.random() - 0.5) * height * 0.18;
 
     return {
+      id: index,
       x,
       y,
       originX: x,
@@ -265,7 +269,8 @@
       phase: Math.random() * Math.PI * 2,
       drift: 0.0018 + Math.random() * 0.0028,
       hue: index % 5 === 0 ? "0,159,227" : "150,0,255",
-      alpha: 0.28 + Math.random() * 0.38
+      alpha: 0.28 + Math.random() * 0.38,
+      activation: 0
     };
   };
 
@@ -276,24 +281,29 @@
     height = Math.max(1, Math.round(rect.height));
     canvas.width = Math.floor(width * dpr);
     canvas.height = Math.floor(height * dpr);
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const centerX = width * (width < 760 ? 0.58 : 0.68);
     const centerY = height * 0.5;
-    const count = width < 700 ? 58 : Math.min(128, Math.floor(width / 10));
+    const count = width < 700 ? 54 : Math.min(144, Math.floor(width / 9));
     pointer.x = pointer.tx = centerX;
     pointer.y = pointer.ty = centerY;
+    pointer.px = centerX;
+    pointer.py = centerY;
     particles = Array.from({ length: count }, (_, index) => createParticle(index, centerX, centerY));
+    synapses = [];
+    thoughtTrail = [];
   };
 
   const drawParticle = (particle, influence) => {
-    const glow = particle.radius + influence * 2.2;
+    const energy = Math.max(influence, particle.activation);
+    const glow = particle.radius + energy * 3.4;
     const gradient = ctx.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, glow * 8);
-    gradient.addColorStop(0, `rgba(${particle.hue}, ${particle.alpha * 0.55})`);
-    gradient.addColorStop(0.35, `rgba(${particle.hue}, ${particle.alpha * 0.16})`);
-    gradient.addColorStop(1, `rgba(${particle.hue}, 0)`);
+    gradient.addColorStop(0, "rgba(" + particle.hue + "," + (particle.alpha * (0.55 + energy * 0.32)) + ")");
+    gradient.addColorStop(0.35, "rgba(" + particle.hue + "," + (particle.alpha * (0.16 + energy * 0.14)) + ")");
+    gradient.addColorStop(1, "rgba(" + particle.hue + ",0)");
 
     ctx.beginPath();
     ctx.fillStyle = gradient;
@@ -301,12 +311,55 @@
     ctx.fill();
 
     ctx.beginPath();
-    ctx.fillStyle = `rgba(255,255,255,${0.12 + influence * 0.12})`;
-    ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,255,255," + (0.18 + energy * 0.72) + ")";
+    ctx.arc(particle.x, particle.y, particle.radius + energy * 0.9, 0, Math.PI * 2);
     ctx.fill();
   };
 
-  const drawConnections = () => {
+  const addSynapse = (a, b, strength = 1) => {
+    if (!a || !b || a === b) return;
+    const from = a.id < b.id ? a : b;
+    const to = a.id < b.id ? b : a;
+    const existing = synapses.find((item) => item.from === from && item.to === to);
+    if (existing) {
+      existing.life = 1;
+      existing.strength = Math.min(1, Math.max(existing.strength, strength));
+      return;
+    }
+    synapses.push({
+      from,
+      to,
+      life: 1,
+      strength: Math.min(1, strength),
+      phase: Math.random() * Math.PI * 2
+    });
+    const limit = width < 700 ? 80 : 190;
+    if (synapses.length > limit) synapses.splice(0, synapses.length - limit);
+  };
+
+  const activateNetwork = (x, y, speed = 0) => {
+    const radius = width < 700 ? 155 : 210;
+    const nearby = particles
+      .map((particle) => ({ particle, distance: Math.hypot(particle.x - x, particle.y - y) }))
+      .filter((item) => item.distance < radius)
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, width < 700 ? 5 : 8);
+
+    nearby.forEach(({ particle, distance }, index) => {
+      particle.activation = Math.max(particle.activation, 1 - distance / radius);
+      if (index > 0) addSynapse(nearby[index - 1].particle, particle, 0.72 + speed * 0.04);
+      if (index > 1 && index % 2 === 0) addSynapse(nearby[0].particle, particle, 0.58 + speed * 0.03);
+    });
+
+    const previous = thoughtTrail[thoughtTrail.length - 1];
+    if (!previous || Math.hypot(previous.x - x, previous.y - y) > 15) {
+      thoughtTrail.push({ x, y, life: 1 });
+      if (thoughtTrail.length > 36) thoughtTrail.shift();
+    }
+  };
+
+  const drawAmbientConnections = () => {
+    const connectionDistance = width < 700 ? 78 : 102;
     for (let i = 0; i < particles.length; i += 1) {
       for (let j = i + 1; j < particles.length; j += 1) {
         const a = particles[i];
@@ -314,11 +367,11 @@
         const dx = a.x - b.x;
         const dy = a.y - b.y;
         const dist = Math.hypot(dx, dy);
-        if (dist > 92) continue;
+        if (dist > connectionDistance) continue;
 
         ctx.beginPath();
-        ctx.strokeStyle = `rgba(255,255,255,${(1 - dist / 92) * 0.045})`;
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(255,255,255," + ((1 - dist / connectionDistance) * 0.055) + ")";
+        ctx.lineWidth = 0.75;
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
         ctx.stroke();
@@ -326,18 +379,97 @@
     }
   };
 
+  const drawSynapses = (time, frameScale) => {
+    synapses = synapses.filter((synapse) => {
+      synapse.life -= 0.0019 * frameScale;
+      if (synapse.life <= 0) return false;
+
+      const pulse = 0.5 + Math.sin(time * 0.006 + synapse.phase) * 0.5;
+      const alpha = synapse.life * synapse.strength;
+      const gradient = ctx.createLinearGradient(
+        synapse.from.x,
+        synapse.from.y,
+        synapse.to.x,
+        synapse.to.y
+      );
+      gradient.addColorStop(0, "rgba(150,0,255," + (alpha * 0.48) + ")");
+      gradient.addColorStop(0.52, "rgba(255,255,255," + (alpha * (0.22 + pulse * 0.38)) + ")");
+      gradient.addColorStop(1, "rgba(0,159,227," + (alpha * 0.48) + ")");
+
+      ctx.beginPath();
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 0.75 + alpha * 1.2;
+      ctx.moveTo(synapse.from.x, synapse.from.y);
+      ctx.lineTo(synapse.to.x, synapse.to.y);
+      ctx.stroke();
+
+      const progress = (time * 0.00022 + synapse.phase) % 1;
+      const pulseX = synapse.from.x + (synapse.to.x - synapse.from.x) * progress;
+      const pulseY = synapse.from.y + (synapse.to.y - synapse.from.y) * progress;
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(255,255,255," + (alpha * 0.72) + ")";
+      ctx.arc(pulseX, pulseY, 0.7 + pulse * 1.2, 0, Math.PI * 2);
+      ctx.fill();
+      return true;
+    });
+  };
+
+  const drawThoughtTrail = (frameScale) => {
+    thoughtTrail.forEach((point) => { point.life -= 0.013 * frameScale; });
+    thoughtTrail = thoughtTrail.filter((point) => point.life > 0);
+    if (thoughtTrail.length < 2) return;
+
+    ctx.beginPath();
+    thoughtTrail.forEach((point, index) => {
+      if (index === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    });
+    const latestLife = thoughtTrail[thoughtTrail.length - 1].life;
+    ctx.strokeStyle = "rgba(255,255,255," + (latestLife * 0.16) + ")";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  };
+
+  const drawPointerConnections = () => {
+    if (!pointer.active) return;
+    const nearest = particles
+      .map((particle) => ({ particle, distance: Math.hypot(particle.x - pointer.x, particle.y - pointer.y) }))
+      .filter((item) => item.distance < 190)
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 5);
+
+    nearest.forEach(({ particle, distance }) => {
+      const alpha = (1 - distance / 190) * 0.38;
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(255,255,255," + alpha + ")";
+      ctx.lineWidth = 0.8;
+      ctx.moveTo(pointer.x, pointer.y);
+      ctx.lineTo(particle.x, particle.y);
+      ctx.stroke();
+    });
+
+    const pointerGlow = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 42);
+    pointerGlow.addColorStop(0, "rgba(255,255,255,0.26)");
+    pointerGlow.addColorStop(0.24, "rgba(0,159,227,0.12)");
+    pointerGlow.addColorStop(1, "rgba(150,0,255,0)");
+    ctx.beginPath();
+    ctx.fillStyle = pointerGlow;
+    ctx.arc(pointer.x, pointer.y, 42, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
   const draw = (time = 0) => {
     if (time - lastFrame < 16) {
       requestAnimationFrame(draw);
       return;
     }
+    const frameScale = Math.min(2.2, Math.max(0.7, (time - lastFrame) / 16.67));
     lastFrame = time;
     ctx.clearRect(0, 0, width, height);
 
     pointer.x += (pointer.tx - pointer.x) * 0.06;
     pointer.y += (pointer.ty - pointer.y) * 0.06;
 
-    ctx.globalCompositeOperation = "lighter";
     particles.forEach((particle) => {
       const waveX = Math.cos(time * particle.drift + particle.phase) * 0.16;
       const waveY = Math.sin(time * particle.drift * 1.2 + particle.phase) * 0.14;
@@ -345,22 +477,29 @@
       const dy = particle.y - pointer.y;
       const dist = Math.hypot(dx, dy) || 1;
       const influence = Math.max(0, 1 - dist / 230);
-      const force = pointer.active ? influence * 0.34 : influence * 0.08;
+      const force = pointer.active ? influence * 0.075 : influence * 0.018;
 
-      particle.vx += waveX + (dx / dist) * force;
-      particle.vy += waveY + (dy / dist) * force;
+      particle.vx += waveX - (dx / dist) * force + (dy / dist) * force * 0.34;
+      particle.vy += waveY - (dy / dist) * force - (dx / dist) * force * 0.34;
       particle.vx += (particle.originX - particle.x) * 0.0009;
       particle.vy += (particle.originY - particle.y) * 0.0009;
       particle.vx *= 0.92;
       particle.vy *= 0.92;
       particle.x += particle.vx;
       particle.y += particle.vy;
-
-      drawParticle(particle, influence);
+      particle.activation = Math.max(0, particle.activation - 0.008 * frameScale);
     });
 
+    ctx.globalCompositeOperation = "lighter";
+    drawAmbientConnections();
+    drawSynapses(time, frameScale);
+    drawThoughtTrail(frameScale);
+    drawPointerConnections();
+    particles.forEach((particle) => {
+      const influence = Math.max(0, 1 - Math.hypot(particle.x - pointer.x, particle.y - pointer.y) / 230);
+      drawParticle(particle, pointer.active ? influence : 0);
+    });
     ctx.globalCompositeOperation = "source-over";
-    drawConnections();
     requestAnimationFrame(draw);
   };
 
@@ -369,6 +508,23 @@
     pointer.tx = event.clientX - rect.left;
     pointer.ty = event.clientY - rect.top;
     pointer.active = true;
+    const speed = Math.min(12, Math.hypot(pointer.tx - pointer.px, pointer.ty - pointer.py) / 7);
+    pointer.px = pointer.tx;
+    pointer.py = pointer.ty;
+    if (event.timeStamp - lastPointerSample > 32) {
+      activateNetwork(pointer.tx, pointer.ty, speed);
+      lastPointerSample = event.timeStamp;
+    }
+  }, { passive: true });
+
+  hero.addEventListener("pointerdown", (event) => {
+    const rect = hero.getBoundingClientRect();
+    pointer.tx = event.clientX - rect.left;
+    pointer.ty = event.clientY - rect.top;
+    pointer.x = pointer.tx;
+    pointer.y = pointer.ty;
+    pointer.active = true;
+    activateNetwork(pointer.x, pointer.y, 4);
   }, { passive: true });
 
   hero.addEventListener("pointerleave", () => {
@@ -376,6 +532,10 @@
     pointer.ty = height * 0.5;
     pointer.active = false;
   });
+
+  hero.addEventListener("pointerup", () => {
+    if (window.matchMedia("(pointer: coarse)").matches) pointer.active = false;
+  }, { passive: true });
 
   resize();
   draw();
