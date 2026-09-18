@@ -93,6 +93,26 @@ export const projectType = defineType({
     }),
     defineField({name: "technologies", title: "Tecnologías", type: "array", of: [{type: "string"}], options: {layout: "tags"}}),
     defineField({
+      name: "galleryImages",
+      title: "Fotografías del proyecto",
+      description: "Sube las imágenes que podrán recorrerse en la galería. Puedes arrastrarlas para cambiar su orden.",
+      type: "array",
+      of: [{
+        type: "image",
+        options: {hotspot: true},
+        fields: [
+          defineField({name: "caption", title: "Pie de foto (opcional)", type: "string"}),
+          defineField({
+            name: "alt",
+            title: "Descripción accesible",
+            description: "Describe brevemente lo que aparece en esta fotografía.",
+            type: "string",
+            validation: (rule) => rule.required()
+          })
+        ]
+      }]
+    }),
+    defineField({
       name: "heroImage",
       title: "Imagen principal",
       type: "image",

@@ -949,6 +949,71 @@ h3 {
 .video-external { display: inline-block; margin-top: 0.8rem; font-size: 0.8rem; text-decoration: underline; }
 .video-navigation[hidden], .video-swipe[hidden] { display: none; }
 
+.project-photo-dialog {
+  width: min(96vw, 88rem);
+  max-height: 96dvh;
+  overflow-y: auto;
+}
+
+.photo-frame {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: min(68dvh, 42rem);
+  place-items: center;
+  overflow: hidden;
+  background: #000;
+  touch-action: pan-y;
+}
+
+.photo-frame img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 72dvh;
+  object-fit: contain;
+}
+
+.photo-frame:fullscreen,
+.photo-frame:-webkit-full-screen,
+.project-photo-dialog.is-expanded .photo-frame {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+}
+
+.photo-frame:fullscreen img,
+.photo-frame:-webkit-full-screen img,
+.project-photo-dialog.is-expanded .photo-frame img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: contain;
+}
+
+.project-photo-dialog.is-expanded {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  overflow: hidden;
+}
+
+.project-photo-dialog.is-expanded .video-dialog-inner { padding: 0; }
+.project-photo-dialog.is-expanded .video-dialog-close,
+.project-photo-dialog.is-expanded .project-video-title,
+.project-photo-dialog.is-expanded .project-video-caption,
+.project-photo-dialog.is-expanded .video-navigation,
+.project-photo-dialog.is-expanded .video-swipe { display: none; }
+
 .video-frame:fullscreen,
 .video-frame:-webkit-full-screen,
 .project-video-dialog.is-expanded .video-frame {
@@ -999,6 +1064,14 @@ h3 {
   .project-video-dialog .video-dialog-inner { padding: 0.75rem; }
   .project-video-dialog .video-frame { max-height: 72dvh; }
   .video-fullscreen { top: 0.5rem; right: 0.5rem; }
+  .project-photo-dialog {
+    width: 100vw;
+    max-width: none;
+    max-height: 100dvh;
+    border-inline: 0;
+  }
+  .project-photo-dialog .video-dialog-inner { padding: 0.75rem; }
+  .photo-frame { min-height: 55dvh; }
 }
 
 .project-context-dialog {

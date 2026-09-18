@@ -244,6 +244,27 @@
     </div>
   </dialog>
 
+  <dialog class="video-dialog project-photo-dialog" data-photo-dialog aria-labelledby="project-photo-title">
+    <div class="video-dialog-inner">
+      <button class="video-dialog-close" type="button" data-photo-close aria-label="Cerrar galería">Cerrar</button>
+      <h2 id="project-photo-title" class="project-video-title" data-photo-title></h2>
+      <div class="photo-frame" data-photo-stage>
+        <img data-photo-image alt="">
+        <button class="video-fullscreen" type="button" data-photo-fullscreen aria-expanded="false">Pantalla completa</button>
+      </div>
+      <p class="project-video-caption" data-photo-caption></p>
+      <div class="video-navigation" data-photo-nav hidden>
+        <div class="video-navigation-row">
+          <button type="button" data-photo-prev aria-label="Fotografía anterior">← Anterior</button>
+          <p data-photo-counter role="status" aria-live="polite" aria-atomic="true"></p>
+          <button type="button" data-photo-next aria-label="Fotografía siguiente">Siguiente →</button>
+        </div>
+        <div class="video-pages" data-photo-pages role="group" aria-label="Elegir fotografía"></div>
+      </div>
+      <p class="video-swipe" data-photo-swipe hidden>← Desliza sobre la imagen para cambiar de foto →</p>
+    </div>
+  </dialog>
+
   <dialog class="video-dialog project-context-dialog" data-context-dialog aria-labelledby="project-context-title">
     <div class="video-dialog-inner project-context-inner">
       <button class="video-dialog-close" type="button" data-context-close aria-label="Cerrar contexto">Cerrar</button>
@@ -260,6 +281,7 @@
     </div>
   </dialog>  <script src="sanity.config.js"></script>
   <script src="video-gallery.js?v=20260913"></script>
-  <script src="script.js?v=20260917"></script>
+  <script src="photo-gallery.js?v=20260918"></script>
+  <script src="script.js?v=20260918"></script>
 </body>
 </html>

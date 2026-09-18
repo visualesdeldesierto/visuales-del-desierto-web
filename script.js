@@ -10,6 +10,8 @@
   const projectGallery = document.querySelector("[data-project-gallery]");
   const videoDialog = document.querySelector("[data-video-dialog]");
   const videoGallery = window.ProjectVideos?.createGallery(videoDialog);
+  const photoDialog = document.querySelector("[data-photo-dialog]");
+  const photoGallery = window.ProjectPhotos?.createGallery(photoDialog);
   const contextDialog = document.querySelector("[data-context-dialog]");
   const contextClose = document.querySelector("[data-context-close]");
   const contextTitle = document.querySelector("[data-context-title]");
@@ -86,10 +88,20 @@
       vimeoUrl,
       vimeoOrientation,
       videos[]{title, url, orientation},
+      galleryImages[]{
+        caption,
+        alt,
+        "url": asset->url
+      },
       clientOrSpace,
       location,
       shortDescription,
       role,
+      "heroPhoto": {
+        "url": heroImage.asset->url,
+        "alt": coalesce(heroImage.alt, title),
+        "caption": title
+      },
       "imageUrl": heroImage.asset->url,
       "imageAlt": coalesce(heroImage.alt, title)
     }`;
@@ -159,6 +171,18 @@
             videoGallery.open(project, playButton);
           });
           actions.append(playButton);
+        }
+        const photos = window.ProjectPhotos?.collectPhotos(project) || [];
+        if (photos.length && photoGallery) {
+          const photoButton = document.createElement("button");
+          photoButton.className = "project-video-button";
+          photoButton.type = "button";
+          photoButton.textContent = photos.length === 1 ? "Ver foto" : "Ver fotos (" + photos.length + ")";
+          photoButton.setAttribute("aria-haspopup", "dialog");
+          photoButton.addEventListener("click", () => {
+            photoGallery.open(project, photoButton);
+          });
+          actions.append(photoButton);
         }
         if (actions.childElementCount) caption.append(actions);
         article.append(media, caption);
