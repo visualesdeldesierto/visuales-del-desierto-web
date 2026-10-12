@@ -2,7 +2,7 @@
   "use strict";
   const els = {
     intro: document.querySelector("#intro"), start: document.querySelector("#start-button"),
-    retry: document.querySelector("#retry-button"), play: document.querySelector("#play-button"),
+    retry: document.querySelector("#retry-button"),
     status: document.querySelector("#status-card"), statusText: document.querySelector("#status-text"),
     artwork: document.querySelector("#artwork-card"), scene: document.querySelector("#ar-scene"),
     target: document.querySelector("#portal-target"), plane: document.querySelector("#portal-plane"),
@@ -11,6 +11,11 @@
   let started = false;
   let mediaPrepared = false;
   let trackingWatchdog = null;
+  let targetVisible = false;
+  let playbackAttempt = 0;
+  let playbackRetryTimer = null;
+  let playbackPending = false;
+  const maxPlaybackAttempts = 6;
 
   function setStatus(message, state = "info") {
     els.status.hidden = false;
@@ -40,38 +45,74 @@
 
   function prepareVideo() {
     if (mediaPrepared) return;
+    els.video.muted = true;
+    els.video.defaultMuted = true;
+    els.video.playsInline = true;
+    els.video.setAttribute("muted", "");
+    els.video.setAttribute("playsinline", "");
     els.video.src = els.video.dataset.src;
     els.video.load();
     els.plane.setAttribute("material", "shader: flat; src: #portal-video; transparent: false");
     mediaPrepared = true;
   }
 
-  async function playVideo() {
+  function clearPlaybackRetry() {
+    if (playbackRetryTimer === null) return;
+    window.clearTimeout(playbackRetryTimer);
+    playbackRetryTimer = null;
+  }
+
+  async function ensureVideoPlaying() {
+    if (!targetVisible || playbackPending) return;
+    playbackPending = true;
     prepareVideo();
     setStatus("Portal encontrado · cargando obra…");
     try {
       await els.video.play();
-      els.play.hidden = true;
+      if (!targetVisible) {
+        els.video.pause();
+        return;
+      }
+      playbackAttempt = 0;
+      clearPlaybackRetry();
       els.artwork.hidden = false;
       setStatus("Portal encontrado");
     } catch {
-      setStatus("Portal encontrado · toca para reproducir");
-      els.play.hidden = false;
+      if (!targetVisible) return;
+      playbackAttempt += 1;
+      if (playbackAttempt > maxPlaybackAttempts) {
+        setStatus("No pudimos iniciar la obra automáticamente. Desactiva el ahorro de datos e inténtalo de nuevo.", "error");
+        return;
+      }
+      setStatus("Portal encontrado · iniciando obra…");
+      const delay = Math.min(250 * (2 ** (playbackAttempt - 1)), 2000);
+      clearPlaybackRetry();
+      playbackRetryTimer = window.setTimeout(ensureVideoPlaying, delay);
+    } finally {
+      playbackPending = false;
     }
   }
 
+  function playVideo() {
+    targetVisible = true;
+    playbackAttempt = 0;
+    clearPlaybackRetry();
+    void ensureVideoPlaying();
+  }
+
   function pauseVideo() {
+    targetVisible = false;
+    clearPlaybackRetry();
     els.video.pause();
     els.artwork.hidden = true;
-    els.play.hidden = true;
     if (started) setStatus("Buscando portal…");
   }
 
   function startTrackingWatchdog() {
     if (trackingWatchdog !== null) window.clearInterval(trackingWatchdog);
     trackingWatchdog = window.setInterval(() => {
-      const targetVisible = els.target.object3D?.visible === true;
-      if (started && !targetVisible && !els.video.paused) pauseVideo();
+      const targetIsVisible = els.target.object3D?.visible === true;
+      if (started && !targetIsVisible && !els.video.paused) pauseVideo();
     }, 200);
   }
 
@@ -101,14 +142,21 @@
 
   els.start.addEventListener("click", startExperience);
   els.retry.addEventListener("click", startExperience);
-  els.play.addEventListener("click", playVideo);
   els.target.addEventListener("targetFound", playVideo);
   els.target.addEventListener("targetLost", pauseVideo);
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pauseVideo();
   });
-  els.video.addEventListener("waiting", () => setStatus("Portal encontrado · cargando obra…"));
-  els.video.addEventListener("playing", () => setStatus("Portal encontrado"));
+  els.video.addEventListener("waiting", () => {
+    if (targetVisible) setStatus("Portal encontrado · cargando obra…");
+  });
+  els.video.addEventListener("canplay", () => {
+    if (targetVisible && els.video.paused) void ensureVideoPlaying();
+  });
+  els.video.addEventListener("playing", () => {
+    if (targetVisible) setStatus("Portal encontrado");
+    else els.video.pause();
+  });
   els.video.addEventListener("error", () => setStatus("El video del Portal 01 aún no está disponible.", "error"));
   els.scene.addEventListener("arError", event => {
     setStatus(cameraErrorMessage(event.detail?.error || event.detail), "error");

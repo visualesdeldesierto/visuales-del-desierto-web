@@ -24,6 +24,7 @@ El cactus compilado contiene 4,786 puntos de coincidencia y 124 puntos de seguim
 
 - QR, cámara, detección, reproducción, pérdida, pausa y recuperación validados en iPhone.
 - Flujo funcional en varios Android; el rendimiento varía según el dispositivo.
+- Al reconocer el cactus, la obra se reproduce automáticamente en silencio; no existe un botón manual de reproducción.
 - La prueba impresa está pendiente.
 - El QR permanece separado del objetivo durante el prototipo.
 

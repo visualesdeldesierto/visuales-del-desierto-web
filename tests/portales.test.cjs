@@ -72,7 +72,20 @@ test('los recursos cargan aunque Vercel sirva la ruta sin barra final', () => {
 test('el video se pausa aunque el evento targetLost no llegue en iPhone', () => {
   const app = read('portales/app.js');
   assert.match(app, /els\.target\.object3D\?\.visible === true/);
-  assert.match(app, /!targetVisible && !els\.video\.paused/);
+  assert.match(app, /!targetIsVisible && !els\.video\.paused/);
   assert.match(app, /window\.setInterval\([\s\S]*?, 200\)/);
   assert.match(app, /visibilitychange/);
+});
+
+test('la obra se reproduce automáticamente sin botón manual', () => {
+  const html = read('portales/index.html');
+  const app = read('portales/app.js');
+  assert.doesNotMatch(html, /id="play-button"/);
+  assert.doesNotMatch(html, /Reproducir obra/);
+  assert.doesNotMatch(app, /toca para reproducir/);
+  assert.match(app, /els\.video\.defaultMuted = true/);
+  assert.match(app, /targetFound", playVideo/);
+  assert.match(app, /window\.setTimeout\(ensureVideoPlaying, delay\)/);
+  assert.match(app, /canplay/);
+  assert.match(app, /playbackPending/);
 });
